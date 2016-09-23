@@ -1,0 +1,39 @@
+{
+  "name": "mu-app",
+  "version": "0.0.1",
+  "description": "Search engine for node modules",
+  "main": "index.js",
+  "scripts": {
+    "lint": "spacey-standard",
+    "test": "istanbul cover tape test/*.js | tap-spec && lint",
+    "coverage": "open ./coverage/lcov-report/index.html",
+    "coveralls": "istanbul cover tape test/*.js | tap-spec && cat ./coverage/lcov.info | coveralls"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/apparatus/mu-app.git"
+  },
+  "keywords": [
+    "node",
+    "modules",
+    "search",
+    "engine"
+  ],
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/apparatus/mu-app/issues"
+  },
+  "homepage": "https://github.com/apparatus/mu-app#readme",
+  "pre-commit": [
+    "test"
+  ],
+  "devDependencies": {
+    "coveralls": "^2.11.14",
+    "istanbul": "^0.4.5",
+    "pre-commit": "^1.1.3",
+    "spacey-standard": "^3.0.0",
+    "tap-spec": "^4.1.1",
+    "tape": "^4.6.0"
+  }
+}
