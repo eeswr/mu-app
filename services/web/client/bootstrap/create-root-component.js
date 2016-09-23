@@ -30,7 +30,7 @@ export default function createRootComponent (store) {
       <Router history={history}>
         <Route path="/" component={Shell}>
           <IndexRoute component={Search} />
-          <Route path="info(/:moduleName)" component={Info}/>
+          <Route path="info(/:moduleName)" component={Info} />
         </Route>
       </Router>
     </Provider>
