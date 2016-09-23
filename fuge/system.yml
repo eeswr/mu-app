@@ -29,63 +29,63 @@ redis:
     - redisdata
 
 nodezoo_base:
-  build: ../node_modules/nodezoo-base/
+  build: ../services/base/
   container_name: nodezoo_base
   env_file: ../system.env
   net: host
   restart: always
 
 nodezoo_info:
-  build: ../node_modules/nodezoo-info/
+  build: ../services/info/
   container_name: nodezoo_info
   env_file: ../system.env
   net: host
   restart: always
 
 nodezoo_search:
-  build: ../node_modules/nodezoo-search/
+  build: ../services/search/
   container_name: nodezoo_search
   env_file: ../system.env
   net: host
   restart: always
 
 nodezoo_npm:
-  build: ../node_modules/nodezoo-npm/
+  build: ../services/npm/
   container_name: nodezoo_npm
   env_file: ../system.env
   net: host
   restart: always
 
 nodezoo_github:
-  build: ../node_modules/nodezoo-github/
+  build: ../services/github/
   container_name: nodezoo_github
   env_file: ../system.env
   net: host
   restart: always
 
 nodezoo_travis:
-  build: ../node_modules/nodezoo-travis/
+  build: ../services/travis/
   container_name: nodezoo_travis
   env_file: ../system.env
   net: host
   restart: always
 
 nodezoo_updater:
-  build: ../node_modules/nodezoo-updater/
+  build: ../services/updater/
   container_name: nodezoo_updater
   env_file: ../system.env
   net: host
   restart: always
 
 nodezoo_dequeue:
-  build: ../node_modules/nodezoo-dequeue/
+  build: ../services/dequeue/
   container_name: nodezoo_dequeue
   env_file: ../system.env
   net: host
   restart: always
 
 nodezoo_web:
-  build: ../node_modules/nodezoo-web/
+  build: ../services/web/
   container_name: nodezoo_web
   env_file: ../system.env
   net: host
@@ -94,10 +94,8 @@ nodezoo_web:
     - 8000:8000
 
 nodezoo_coveralls:
-  build: ../node_modules/nodezoo-coveralls/
+  build: ../services/coveralls/
   container_name: nodezoo_coveralls
   env_file: ../system.env
   net: host
   restart: always
-
-

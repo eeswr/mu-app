@@ -6,7 +6,7 @@ module.exports = {
   proxy: 'docker',
 
   // Run docker containers if an image is specified.
-  runDocker: true,
+  runDocker: false,
 
   // Log to file, not console logs are found in ./logs
   tail: false,
