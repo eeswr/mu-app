@@ -28,6 +28,7 @@ module.exports = function (options) {
 
 function cmdGet (msg, done) {
   let moduleName = msg.name
+
   let cache = opts.cache
   let registry = opts.registry + moduleName
   let context = this
@@ -39,6 +40,7 @@ function cmdGet (msg, done) {
     }
 
     if (github && !msg.update) {
+      context.log.debug('Returned cached information: ', moduleName)
       return done(null, {ok: true, data: github.data$(github)})
     }
 
@@ -100,6 +102,13 @@ function cmdGet (msg, done) {
     Async.parallel({
       getRepository: function (cb) {
         github.repos.get({user: params.user, repo: params.repo}, function (err, data) {
+          if (data && data.meta){
+            context.log.debug('Github rate limit information: ', {
+              'x-ratelimit-remaining': data.meta['x-ratelimit-remaining'],
+              'x-ratelimit-limit': data.meta['x-ratelimit-limit']
+            })
+          }
+
           if (err) {
             context.log.debug(`Read repo for ${moduleName} get error: ${err}`)
           }
@@ -195,7 +204,7 @@ function aliasGet (msg, done) {
   var seneca = this
   var payload = {name: msg.name}
 
-  seneca.act('role:github,cmd:get', payload, (err, res) => {
+  seneca.act(`role:github, cmd:get, update: ${msg.update || false}`, payload, (err, res) => {
     if (err) {
       return done(null, {ok: false, err: err})
     }

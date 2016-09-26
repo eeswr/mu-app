@@ -1,14 +1,16 @@
 'use strict'
 
-var Follow = require('follow')
-var NpmStats = require('npm-stats')
-var JSONStream = require('JSONStream')
-var FastQ = require('fastq')
+const Follow = require('follow')
+const NpmStats = require('npm-stats')
+const JSONStream = require('JSONStream')
+const FastQ = require('fastq')
+const envs = process.env
 
 module.exports = function (options) {
   var seneca = this
 
-  let queue = FastQ(worker, 4)
+  let worker_no = envs.WORKER_NO || 1
+  let queue = FastQ(worker, worker_no)
 
   var opts = seneca.util.deepextend({
     registry: 'https://skimdb.npmjs.com/registry'
@@ -40,13 +42,16 @@ module.exports = function (options) {
     var RegistryStream = NpmStats().list()
     var context = this
 
-    var limit = options.updaterLimit || 0
+    var limit = parseInt(options.updaterLimit || 0, 10)
     var counter = 0
 
     RegistryStream
       .pipe(JSONStream.parse('*'))
       .on('data', (pkgId) => {
-        if (limit && counter >= limit) return
+        if (limit && counter >= limit) {
+          context.log.info('Updater limit exceeded: ', counter, limit)
+          return
+        }
         context.log.info(`Add to execution queue module ${pkgId}`)
 
         queue.push({name: pkgId, context: context}, respond)
