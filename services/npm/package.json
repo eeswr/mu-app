@@ -2,7 +2,7 @@
   "name": "nodezoo-npm",
   "version": "7.1.0",
   "description": "A microservice that handles npm data for nodezoo.com",
-  "main": "./lib/npm.js",
+  "main": "lib/npm.js",
   "license": "MIT",
   "author": "Richard Rodger (http://richardrodger.com)",
   "contributors": [
