@@ -3,7 +3,7 @@
 var Tape = require('tape')
 var Proxyquire = require('proxyquire')
 var NpmProxy = require('./stubs/npm.proxy.js')
-var Mu = require('mu/core/core')
+var Mu = require('mu')
 
 var Npm = Proxyquire('..', NpmProxy)
 
