@@ -19,7 +19,7 @@ var Row = React.createClass({
   render: function () {
     var Tag = this.props.rowElement || 'div'
     return (
-      <Tag className={this.props.className ? `${this.props.className} row` : 'row'}> {this.props.children} </Tag>
+      <Tag className={this.props.className ? `${this.props.className} row` : 'row' }> {this.props.children} </Tag>
     )
   }
 })

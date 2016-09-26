@@ -7,6 +7,7 @@ import {GitInfo} from '../components/git-info'
 import {GitReadme} from '../components/git-readme'
 import {NpmInfo} from '../components/npm-info'
 import {TravisInfo} from '../components/travis-info'
+import {CoverallsInfo} from '../components/coveralls-info'
 
 export const Info = React.createClass({
   propTypes: {
@@ -16,8 +17,10 @@ export const Info = React.createClass({
   componentDidMount () {
     const dispatch = this.props.dispatch
     const moduleName = this.props.params.moduleName
+    const queryString = this.props.location.query
+    const update = queryString.update || false
 
-    dispatch(getInfo(moduleName))
+    dispatch(getInfo(moduleName, update))
   },
 
   shouldComponentUpdate () {
@@ -29,7 +32,7 @@ export const Info = React.createClass({
     let body = null
 
     if (this.props.result) {
-      const {no_github, github, no_npm, npm, no_travis, travis} = this.props.result
+      const {no_github, github, no_npm, npm, no_travis, travis, no_coveralls, coveralls} = this.props.result
 
       body = (
         <div className="panel panel-module-info txt-left">
@@ -52,6 +55,12 @@ export const Info = React.createClass({
           })()}
 
           {(() => {
+            if (!no_coveralls) {
+              return <CoverallsInfo coveralls={coveralls} />
+            }
+          })()}
+
+          {(() => {
             if (!no_github && github.readme) {
               return <GitReadme github={github} />
             }
@@ -59,7 +68,7 @@ export const Info = React.createClass({
         </div>
       )
 
-      if (no_github || no_npm || no_travis) {
+      if (no_github || no_npm || no_travis || no_coveralls) {
         setTimeout(() => {
           this.props.dispatch(getInfo(moduleName))
         }, 3000)
