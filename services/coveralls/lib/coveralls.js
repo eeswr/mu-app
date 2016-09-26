@@ -47,7 +47,7 @@ function cmdGet (msg, done) {
 
     const gitInfo = GitUrlParse(url)
     if (!gitInfo) {
-      return done(err)
+      return done({err: new Error('Cannot parse url')})
     }
 
     queryCoveralls(gitInfo, msg, done)
@@ -61,7 +61,7 @@ function queryCoveralls (gitInfo, msg, done) {
 
   Request.get({url: registry + '.json', gzip: true}, (err, res, body) => {
     if (err) {
-      return done(null, {ok: false, err: err})
+      return done(err)
     }
     if (res && res.statusCode && res.statusCode !== 200) {
       return done(err)
