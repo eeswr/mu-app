@@ -1,119 +1,72 @@
 'use strict'
 
-
 var Request = require('request')
+var Cache = require('lru-cache')
 
 var opts = {
-  registry: 'http://registry.npmjs.org/'
+  cacheSize: 99999
 }
 
-module.exports = function (options) {
-  var seneca = this
-  var extend = seneca.util.deepextend
+module.exports = function (mu, options, done) {
+  opts = Object.assign({}, opts, options)
 
-  opts = extend(opts, options)
-  opts.cache = seneca.make$('npm_cache')
+  opts.mu = mu
+  opts.cache = Cache(opts.cacheSize)
 
-  seneca.add('role:npm,cmd:get', cmdGet)
-  seneca.add('role:info,req:part', aliasGet)
+  mu.define({role: 'store', cmd: 'get', type: 'npm'}, cmdGet)
 
-  return {
-    name: 'nodezoo-npm'
-  }
+  done()
 }
 
 function cmdGet (msg, done) {
-  let cache = opts.cache
-  let context = this
+  var npm = opts.cache.get(msg.name) || null
+  if (npm && !msg.update) {
+    return complete(null, npm)
+  }
 
-  cache.load$(msg.name, (err, npm) => {
+  var registry = opts.registry + msg.name
+  Request.get({url: registry, gzip: true}, (err, res, body) => {
     if (err) {
-      context.log.debug(`Cannot load from cache module ${msg.name}, try now to get it remotely`)
+      return done(err)
     }
 
-    function complete (err, entity) {
-      if (err) {
-        return done(null, {ok: false, err: err})
-      }
-      else {
-        done(null, {ok: true, data: entity.data$(entity)})
-      }
+    var data = null
+    try {
+      data = JSON.parse(body)
+    }
+    catch (e) {
+      return done(err)
     }
 
-    if (npm && !msg.update) {
-      return complete(null, npm)
+    var distTags = data['dist-tags'] || {}
+    var latest = ((data.versions || {})[distTags.latest]) || {}
+    var repository = latest.repository || {}
+    var urlRepo = repository.url || ''
+    var author = latest.author || {}
+    var maintainers = data.maintainers || []
+
+    if (Object.keys(data).length > 0) {
+      var out = {
+        id: data.name || '',
+        name: data.name || '',
+        urlRepo: urlRepo || '',
+        urlPkg: 'https://www.npmjs.com/package/' + data.name || '',
+        description: data.description || '',
+        latestVersion: distTags.latest || '',
+        releaseCount: Object.keys(data.versions || {}).length || 0,
+        dependencies: latest.dependencies || {},
+        author: {name: author.name || '', email: author.email || ''},
+        licence: latest.license || '',
+        maintainers: maintainers || [],
+        readme: data.readme || '',
+        homepage: data.homepage || '',
+        cached: Date.now()
+      }
+
+      opts.cache.set(msg.name, out)
+      return done(null, out)
     }
 
-    var registry = opts.registry + msg.name
-
-    Request.get({url: registry, gzip: true}, (err, res, body) => {
-      if (err) {
-        return complete(err)
-      }
-
-      var data = null
-
-      try {
-        data = JSON.parse(body)
-      }
-      catch (e) {
-        return complete(e)
-      }
-
-      var distTags = data['dist-tags'] || {}
-      var latest = ((data.versions || {})[distTags.latest]) || {}
-      var repository = latest.repository || {}
-      var urlRepo = repository.url || ''
-      var author = latest.author || {}
-      var maintainers = data.maintainers || []
-
-      if (Object.keys(data).length > 0) {
-        var out = {
-          id: data.name || '',
-          name: data.name || '',
-          urlRepo: urlRepo || '',
-          urlPkg: 'https://www.npmjs.com/package/' + data.name || '',
-          description: data.description || '',
-          latestVersion: distTags.latest || '',
-          releaseCount: Object.keys(data.versions || {}).length || 0,
-          dependencies: latest.dependencies || {},
-          author: {name: author.name || '', email: author.email || ''},
-          licence: latest.license || '',
-          maintainers: maintainers || [],
-          readme: data.readme || '',
-          homepage: data.homepage || '',
-          cached: Date.now()
-        }
-
-        if (npm) {
-          npm.data$(out).save$(complete)
-        }
-        else {
-          data.id$ = msg.name
-          cache.make$(out).save$(complete)
-        }
-      }
-      else {
-        return done(null, {ok: false, err: new Error('not found on npm')})
-      }
-    })
-  })
-}
-
-function aliasGet (msg, done) {
-  var seneca = this
-  var payload = {name: msg.name}
-
-  seneca.act(`role:npm, cmd:get, update: ${msg.update || false}`, payload, (err, res) => {
-    if (err) {
-      return done(null, {ok: false, err: err})
-    }
-
-    if (res && res.ok) {
-      payload.data = res.data
-      seneca.act('role:info,res:part,part:npm', payload)
-    }
-
-    done(null, {ok: true})
+    return done({err: new Error('not found on npm')})
   })
 }
