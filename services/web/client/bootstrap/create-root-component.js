@@ -12,6 +12,10 @@ import {Router, Route, IndexRoute} from 'react-router'
 import Shell from '../containers/shell'
 import Search from '../containers/search'
 import Info from '../containers/info'
+import Login from '../containers/login'
+import ResetPassword from '../containers/reset-password'
+import ChangePassword from '../containers/change-password'
+import Profile from '../containers/profile'
 
 export default function createRootComponent (store) {
   // Sets react router up so that it uses browser
@@ -22,6 +26,14 @@ export default function createRootComponent (store) {
   // that state is shared between both.
   syncReduxAndRouter(history, store)
 
+  // Redirects to the login page if the user
+  // is not logged in
+  function requireAuth(nextState, replace) {
+    if (!store.getState().login.userInfo) {
+      replace(store.getState().routing, '/auth/login')
+    }
+  }
+
   // This is our root component, it's a set of routes
   // composed together with our redux store, the Provider
   // component handles passing our state to the router.
@@ -31,6 +43,14 @@ export default function createRootComponent (store) {
         <Route path="/" component={Shell}>
           <IndexRoute component={Search} />
           <Route path="info(/:moduleName)" component={Info} />
+          <Route path="profile" component={Profile} onEnter={requireAuth} />
+          <Route path="auth">
+            <Route path="login" component={Login} />
+            <Route path="reset">
+              <IndexRoute component={ResetPassword} />
+              <Route path="(:token)" component={ChangePassword} />
+            </Route>
+          </Route>
         </Route>
       </Router>
     </Provider>

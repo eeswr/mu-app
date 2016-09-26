@@ -24,19 +24,22 @@ export const SearchResult = React.createClass({
           </h3>
           {this.hasBuild(result.travis) ?
             <div className="fl-right module-badges">
-              <TravisBadge buildState={result.travis.buildState} />
+              <TravisBadge buildState={result.travis.buildState}/>
             </div> : null}
           <div className="fl-right module-sources">
-            <ModuleSource data={result} sourceName="github" />
-            <ModuleSource data={result} sourceName="npm" />
+            <ModuleSource data={result} sourceName="github"/>
+            <ModuleSource data={result} sourceName="npm"/>
             {this.hasBuild(result.travis) ? null :
-              <ModuleSource data={result} sourceName="travis" />}
+              <ModuleSource data={result} sourceName="travis"/>}
+            {result.coveralls && result.coveralls.badgeUrl &&
+              <ModuleSource data={result} sourceName="coveralls" imgSrc={result.coveralls.badgeUrl}/>
+            }
           </div>
         </div>
         <p className="module-description">
           <i>{result.npm.description}</i>
         </p>
-        <GithubResult github={result.github} />
+        <GithubResult github={result.github}/>
       </Col>
     )
   }

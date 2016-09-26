@@ -21,7 +21,9 @@ module.exports = [
     method: 'GET',
     path: '/api/info/{name}',
     handler: function (request, reply) {
-      var pattern = {role: 'info', cmd: 'get', name: request.params.name}
+
+      var update = request.query.update || false
+      var pattern = {role: 'info', cmd: 'get', name: request.params.name, update: update}
       var payload = {}
 
       request.seneca.act(pattern, payload, function (err, data) {
@@ -30,7 +32,7 @@ module.exports = [
         data.no_npm = !data.npm
         data.no_github = !data.github
         data.no_travis = !data.travis
-
+        data.no_coveralls = !data.coveralls
 
         return reply(data)
       })
