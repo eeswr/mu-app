@@ -18,12 +18,12 @@ Tape('Works over the network', (test) => {
   client.outbound({role: 'store', type: 'npm'}, Tcp.client({port: 4000, host: 'localhost'}))
 
   Npm(server, {}, () => {
-    client.dispatch({role: 'store', cmd: 'get', type: 'npm', name: 'example-plugin'}, (err, reply) => {
+    client.dispatch({role: 'store', cmd: 'get', type: 'npm', name: 'example-module'}, (err, reply) => {
       test.error(err)
       test.ok(reply)
 
-      test.same(reply.id, 'example-plugin')
-      test.same(reply.name, 'example-plugin')
+      test.same(reply.id, 'example-module')
+      test.same(reply.name, 'example-module')
       test.ok(reply.cached)
 
       client.tearDown()
@@ -32,29 +32,29 @@ Tape('Works over the network', (test) => {
   })
 })
 
-Tape('A valid role:npm,cmd:get call - Has no error and data', (test) => {
+Tape('A valid "role:store,type:npm,cmd:get" call - Has no error and valid data', (test) => {
   test.plan(2)
 
   var mu = Mu()
 
   Npm(mu, {}, () => {
-    mu.dispatch({role: 'store', cmd: 'get', type: 'npm', name: 'example-plugin'}, (err, reply) => {
+    mu.dispatch({role: 'store', cmd: 'get', type: 'npm', name: 'example-module'}, (err, reply) => {
       test.error(err)
       test.ok(reply)
     })
   })
 })
 
-Tape('Returns cached data by default', (test) => {
+Tape('It returns cached data by default', (test) => {
   test.plan(1)
 
   var mu = Mu()
 
   Npm(mu, {}, () => {
-    mu.dispatch({role: 'store', cmd: 'get', type: 'npm', name: 'mu'}, (err, reply) => {
+    mu.dispatch({role: 'store', cmd: 'get', type: 'npm', name: 'example-module'}, (err, reply) => {
       var cachedOne = reply.cached
 
-      mu.dispatch({role: 'store', cmd: 'get', type: 'npm', name: 'mu'}, (err, reply) => {
+      mu.dispatch({role: 'store', cmd: 'get', type: 'npm', name: 'example-module'}, (err, reply) => {
         var cachedTwo = reply.cached
 
         test.same(cachedOne, cachedTwo)
@@ -63,45 +63,35 @@ Tape('Returns cached data by default', (test) => {
   })
 })
 
-Tape('Returns cached data by default', (test) => {
+Tape('It can return non-cached data', (test) => {
   test.plan(1)
 
   var mu = Mu()
 
   Npm(mu, {}, () => {
-    mu.dispatch({role: 'store', cmd: 'get', type: 'npm', name: 'mu'}, (err, reply) => {
+    mu.dispatch({role: 'store', cmd: 'get', type: 'npm', name: 'example-module'}, (err, reply) => {
       var cachedOne = reply.cached
 
-      mu.dispatch({role: 'store', cmd: 'get', type: 'npm', name: 'mu'}, (err, reply) => {
+      mu.dispatch({role: 'store', cmd: 'get', type: 'npm', name: 'example-module', update: true}, (err, reply) => {
         var cachedTwo = reply.cached
 
-        test.same(cachedOne, cachedTwo)
+        console.log(cachedOne, cachedTwo)
+
+        test.ok((cachedOne < cachedTwo))
       })
     })
   })
 })
 
-Tape.skip('Can return non-cached data', (test) => {
+Tape('Has an error and no data', (test) => {
+  test.plan(2)
+
   var mu = Mu()
-  var payload = {name: 'mu'}
 
-  mu.dispatch('role:npm,cmd:get', payload, (err, reply) => {
-    var cachedOne = reply.data.cached
-    payload.update = true
-
-    mu.dispatch('role:npm,cmd:get', payload, (err, reply) => {
-
-    })
-  })
-})
-
-Tape.skip('An invalid role:npm,cmd:get call', (test) => {
-  Tape('Has an error and no data', (test) => {
-    var mu = Mu()
-    var payload = {name: 'randomName0927e3'}
-
-    mu.dispatch('role:npm,cmd:get', payload, (err, reply) => {
-
+  Npm(mu, {}, () => {
+    mu.dispatch({role: 'store', cmd: 'get', type: 'npm', name: 'randomName0927e3'}, (err, reply) => {
+      test.ok(err)
+      test.same(reply, {})
     })
   })
 })
