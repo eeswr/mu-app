@@ -2,7 +2,7 @@
   "name": "nodezoo-info",
   "version": "6.0.2",
   "description": "nodezoo.com micro-service handling module info.",
-  "main": "info.js",
+  "main": "lib/info.js",
   "license": "MIT",
   "author": "Richard Rodger (http://richardrodger.com)",
   "contributors": [
