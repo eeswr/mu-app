@@ -17,9 +17,11 @@ var opts = {
   },
   mesh: {
     auto: true,
+    host: envs.GITHUB_HOST || '127.0.0.1',
+    bases: [envs.BASE_HOST || '127.0.0.1:39999'],
     listen: [
-      {pin: 'role:github,cmd:get', model: 'consume'},
-      {pin: 'role:info,req:part', model: 'observe'}
+      {pin: 'role:github,cmd:get', model: 'consume', host: envs.GITHUB_HOST || '127.0.0.1'},
+      {pin: 'role:info,req:part', model: 'observe', host: envs.GITHUB_HOST || '127.0.0.1'}
     ]
   },
   isolated: {

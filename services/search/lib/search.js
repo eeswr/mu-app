@@ -111,20 +111,20 @@ function upsert (msg, done) {
   var detail = {
     name: name,
     travis: {
-      connected: data.travis ? true : false,
+      connected: !!data.travis,
       url: travis.url || '',
       buildState: travis.buildState || ''
     },
     github: {
-      connected: data.github ? true : false,
+      connected: !!data.github,
       stars: github.stars || 0,
       watches: github.watches || 0,
       forks: github.forks || 0,
-      url: github.url || '',
+      url: github.urlRepo || '',
       user: github.user || ''
     },
     npm: {
-      connected: data.npm ? true : false,
+      connected: !!data.npm,
       url: npm.url || '',
       version: npm.latestVersion || '',
       author: npm.author ? npm.author.name || '' : '',
