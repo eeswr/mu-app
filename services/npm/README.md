@@ -66,7 +66,7 @@ available variable names.
 
 ## Messages Handled
 
-### `role:npm,cmd:get`
+### `role:store,type:npm,cmd:get,name:*`
 Returns npm specific data for the module name provided.
 
 ```js
