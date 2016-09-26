@@ -1,4 +1,5 @@
-# nodezoo-npm
+# muzoo-npm
+
 FROM node:4
 
 RUN mkdir /src
@@ -11,7 +12,4 @@ RUN npm install
 
 COPY . /src
 
-CMD ["node", "srv/start.js", "--seneca.options.tag=nodezoo-npm", "--seneca-log=type:act"]
-
-
-
+CMD ["node", "srv/start.js"]
