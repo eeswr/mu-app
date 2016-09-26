@@ -28,13 +28,6 @@ redis:
   volumes_from:
     - redisdata
 
-nodezoo_base:
-  build: ../services/base/
-  container_name: nodezoo_base
-  env_file: ../system.env
-  net: host
-  restart: always
-
 nodezoo_info:
   build: ../services/info/
   container_name: nodezoo_info
@@ -66,20 +59,6 @@ nodezoo_github:
 nodezoo_travis:
   build: ../services/travis/
   container_name: nodezoo_travis
-  env_file: ../system.env
-  net: host
-  restart: always
-
-nodezoo_updater:
-  build: ../services/updater/
-  container_name: nodezoo_updater
-  env_file: ../system.env
-  net: host
-  restart: always
-
-nodezoo_dequeue:
-  build: ../services/dequeue/
-  container_name: nodezoo_dequeue
   env_file: ../system.env
   net: host
   restart: always
