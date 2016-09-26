@@ -18,10 +18,10 @@ module.exports = function (mu, options, done) {
 
 function cmdGet (msg, done) {
   let cache = opts.cache
-  let registry = opts.registry + msg.name
+  let registry = opts.registry + msg.pattern.name
   let context = this
 
-  const cachedData = cache.get(msg.name) || null
+  const cachedData = cache.get(msg.pattern.name) || null
   if (cachedData && !msg.update) {
     return done(null, cachedData)
   }
@@ -50,11 +50,11 @@ function cmdGet (msg, done) {
       return done(err)
     }
 
-    queryCoveralls(gitInfo, done)
+    queryCoveralls(gitInfo, msg, done)
   })
 }
 
-function queryCoveralls (gitInfo, done) {
+function queryCoveralls (gitInfo, msg, done) {
   const cache = opts.cache
   const gitUrl = gitInfo.host.slice(0, gitInfo.host.indexOf('.'))
   const registry = opts.url + gitUrl + '/' + gitInfo.repo
@@ -84,7 +84,7 @@ function queryCoveralls (gitInfo, done) {
       cached: Date.now()
     }
 
-    opts.cache.set(msg.name, data)
+    opts.cache.set(msg.pattern.name, data)
     return done(null, data)
   })
 }
