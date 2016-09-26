@@ -11,9 +11,7 @@ var opts = {
     tag: envs.NPM_TAG || 'muzoo-npm'
   },
   npm: {
-    registry: envs.NPM_REGISTRY || 'http://registry.npmjs.org/'
-    redisHost: envs.NPM_REDIS_HOST || 'localhost',
-    redisPort: envs.NPM_REDIS_PORT || '6379'
+    registry: envs.NPM_REGISTRY || null
   }
 }
 

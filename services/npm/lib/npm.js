@@ -4,7 +4,8 @@ var Request = require('request')
 var Cache = require('lru-cache')
 
 var opts = {
-  cacheSize: 99999
+  cacheSize: 99999,
+  registry: 'http://registry.npmjs.org/'
 }
 
 module.exports = function (mu, options, done) {
@@ -19,12 +20,14 @@ module.exports = function (mu, options, done) {
 }
 
 function cmdGet (msg, done) {
+  msg = msg.pattern
+
   var npm = opts.cache.get(msg.name) || null
   if (npm && !msg.update) {
-    return complete(null, npm)
+    return done(null, npm)
   }
 
-  var registry = opts.registry + msg.name
+  var registry = '' + opts.registry + msg.name
   Request.get({url: registry, gzip: true}, (err, res, body) => {
     if (err) {
       return done(err)

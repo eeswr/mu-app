@@ -8,7 +8,7 @@ module.exports = {
   },
   'versions': {
     '0.0.1': {
-      'name': 'seneca-entity',
+      'name': 'mu',
       'description': 'Entity plugin for seneca',
       'keywords': [
         'seneca',

@@ -1,395 +1,82 @@
 'use strict'
 
-var Lab = require('lab')
-var Code = require('code')
+var Tape = require('tape')
 var Proxyquire = require('proxyquire')
-var NpmFakeData = require('./npm-data')
+var NpmProxy = require('./stubs/npm.proxy.js')
+var Mu = require('mu/core/core')
 
-var lab = exports.lab = Lab.script()
-var describe = lab.describe
-var it = lab.it
-var expect = Code.expect
-
-process.setMaxListeners(999)
-
-var NpmProxy = {
-  request: {
-    get: (opts, done) => {
-      if (opts.url.includes('seneca-entity')) {
-        done(null, {}, JSON.stringify(NpmFakeData))
-      }
-      else {
-        done(new Error('npm error'), null, null)
-      }
-    }
-  }
-}
-
-var Seneca = Proxyquire('seneca', {})
 var Npm = Proxyquire('..', NpmProxy)
 
-function createInstance (done) {
-  var params = {
-    log: 'silent',
-    strict: 'false',
-    errhandler: (err) => {
-      if (err.at) done(err)
-    }
-  }
+Tape('A valid role:npm,cmd:get call - Has no error and data', (test) => {
+  test.plan(2)
 
-  return Seneca(params)
-    .use('entity')
-    .use(Npm)
-}
+  var mu = Mu()
 
-describe('A valid role:npm,cmd:get call', () => {
-  it('Has no error and data', (done) => {
-    var seneca = createInstance(done)
-    var payload = {name: 'seneca-entity'}
-
-    seneca.act('role:npm,cmd:get', payload, (err, reply) => {
-      expect(err).to.not.exist()
-      expect(reply).to.exist()
-      done()
+  Npm(mu, {}, () => {
+    mu.dispatch({role: 'store', cmd: 'get', type: 'npm', name: 'mu'}, (err, reply) => {
+      test.error(err)
+      test.ok(reply)
     })
   })
+})
 
-  it('Has id field', (done) => {
-    var seneca = createInstance(done)
-    var payload = {name: 'seneca-entity'}
+Tape('Returns cached data by default', (test) => {
+  test.plan(1)
 
-    seneca.act('role:npm,cmd:get', payload, (err, reply) => {
-      expect(err).to.not.exist()
+  var mu = Mu()
 
-      expect(reply).to.exist()
-      expect(reply.data).to.exist()
-      expect(reply.err).to.not.exist()
-      expect(reply.ok).to.be.true()
+  Npm(mu, {}, () => {
+    mu.dispatch({role: 'store', cmd: 'get', type: 'npm', name: 'mu'}, (err, reply) => {
+      var cachedOne = reply.cached
 
-      expect(reply.data.id).to.exist().and.to.be.a.string()
-      done()
-    })
-  })
+      mu.dispatch({role: 'store', cmd: 'get', type: 'npm', name: 'mu'}, (err, reply) => {
+        var cachedTwo = reply.cached
 
-  it('Has name field', (done) => {
-    var seneca = createInstance(done)
-    var payload = {name: 'seneca-entity'}
-
-    seneca.act('role:npm,cmd:get', payload, (err, reply) => {
-      expect(err).to.not.exist()
-
-      expect(reply).to.exist()
-      expect(reply.data).to.exist()
-      expect(reply.err).to.not.exist()
-      expect(reply.ok).to.be.true()
-
-      expect(reply.data.name).to.exist().and.to.be.a.string()
-      done()
-    })
-  })
-
-  it('Has urlPkg field', (done) => {
-    var seneca = createInstance(done)
-    var payload = {name: 'seneca-entity'}
-
-    seneca.act('role:npm,cmd:get', payload, (err, reply) => {
-      expect(err).to.not.exist()
-
-      expect(reply).to.exist()
-      expect(reply.data).to.exist()
-      expect(reply.err).to.not.exist()
-      expect(reply.ok).to.be.true()
-
-      expect(reply.data.urlPkg).to.exist().and.to.be.a.string()
-      done()
-    })
-  })
-
-  it('Has urlRepo field', (done) => {
-    var seneca = createInstance(done)
-    var payload = {name: 'seneca-entity'}
-
-    seneca.act('role:npm,cmd:get', payload, (err, reply) => {
-      expect(err).to.not.exist()
-
-      expect(reply).to.exist()
-      expect(reply.data).to.exist()
-      expect(reply.err).to.not.exist()
-      expect(reply.ok).to.be.true()
-
-      expect(reply.data.urlRepo).to.exist().and.to.be.a.string()
-      done()
-    })
-  })
-
-  it('Has description field', (done) => {
-    var seneca = createInstance(done)
-    var payload = {name: 'seneca-entity'}
-
-    seneca.act('role:npm,cmd:get', payload, (err, reply) => {
-      expect(err).to.not.exist()
-
-      expect(reply).to.exist()
-      expect(reply.data).to.exist()
-      expect(reply.err).to.not.exist()
-      expect(reply.ok).to.be.true()
-
-      expect(reply.data.description).to.exist().and.to.be.a.string()
-      done()
-    })
-  })
-
-  it('Has latestVersion field', (done) => {
-    var seneca = createInstance(done)
-    var payload = {name: 'seneca-entity'}
-
-    seneca.act('role:npm,cmd:get', payload, (err, reply) => {
-      expect(err).to.not.exist()
-
-      expect(reply).to.exist()
-      expect(reply.data).to.exist()
-      expect(reply.err).to.not.exist()
-      expect(reply.ok).to.be.true()
-
-      expect(reply.data.latestVersion).to.exist().and.to.be.a.string()
-      done()
-    })
-  })
-
-  it('Has releaseCount field', (done) => {
-    var seneca = createInstance(done)
-    var payload = {name: 'seneca-entity'}
-
-    seneca.act('role:npm,cmd:get', payload, (err, reply) => {
-      expect(err).to.not.exist()
-
-      expect(reply).to.exist()
-      expect(reply.data).to.exist()
-      expect(reply.err).to.not.exist()
-      expect(reply.ok).to.be.true()
-
-      expect(reply.data.releaseCount).to.exist().and.to.be.a.number()
-      done()
-    })
-  })
-
-  it('Has dependencies field', (done) => {
-    var seneca = createInstance(done)
-    var payload = {name: 'seneca-entity'}
-
-    seneca.act('role:npm,cmd:get', payload, (err, reply) => {
-      expect(err).to.not.exist()
-
-      expect(reply).to.exist()
-      expect(reply.data).to.exist()
-      expect(reply.err).to.not.exist()
-      expect(reply.ok).to.be.true()
-
-      expect(reply.data.dependencies).to.exist().and.to.be.an.object()
-      done()
-    })
-  })
-
-  it('Has author field', (done) => {
-    var seneca = createInstance(done)
-    var payload = {name: 'seneca-entity'}
-
-    seneca.act('role:npm,cmd:get', payload, (err, reply) => {
-      expect(err).to.not.exist()
-
-      expect(reply).to.exist()
-      expect(reply.data).to.exist()
-      expect(reply.err).to.not.exist()
-      expect(reply.ok).to.be.true()
-
-      expect(reply.data.author).to.exist().and.to.be.a.object()
-      done()
-    })
-  })
-  it('Has licence field', (done) => {
-    var seneca = createInstance(done)
-    var payload = {name: 'seneca-entity'}
-
-    seneca.act('role:npm,cmd:get', payload, (err, reply) => {
-      expect(err).to.not.exist()
-
-      expect(reply).to.exist()
-      expect(reply.data).to.exist()
-      expect(reply.err).to.not.exist()
-      expect(reply.ok).to.be.true()
-
-      expect(reply.data.licence).to.exist().and.to.be.a.string()
-      done()
-    })
-  })
-
-  it('Has maintainers field', (done) => {
-    var seneca = createInstance(done)
-    var payload = {name: 'seneca-entity'}
-
-    seneca.act('role:npm,cmd:get', payload, (err, reply) => {
-      expect(err).to.not.exist()
-
-      expect(reply).to.exist()
-      expect(reply.data).to.exist()
-      expect(reply.err).to.not.exist()
-      expect(reply.ok).to.be.true()
-
-      expect(reply.data.maintainers).to.exist().and.to.be.an.array()
-      done()
-    })
-  })
-
-  it('Has readme field', (done) => {
-    var seneca = createInstance(done)
-    var payload = {name: 'seneca-entity'}
-
-    seneca.act('role:npm,cmd:get', payload, (err, reply) => {
-      expect(err).to.not.exist()
-
-      expect(reply).to.exist()
-      expect(reply.data).to.exist()
-      expect(reply.err).to.not.exist()
-      expect(reply.ok).to.be.true()
-
-      expect(reply.data.readme).to.exist().and.to.be.a.string()
-      done()
-    })
-  })
-
-  it('Has homepage field', (done) => {
-    var seneca = createInstance(done)
-    var payload = {name: 'seneca-entity'}
-
-    seneca.act('role:npm,cmd:get', payload, (err, reply) => {
-      expect(err).to.not.exist()
-
-      expect(reply).to.exist()
-      expect(reply.data).to.exist()
-      expect(reply.err).to.not.exist()
-      expect(reply.ok).to.be.true()
-
-      expect(reply.data.homepage).to.exist().and.to.be.a.string()
-      done()
-    })
-  })
-
-  it('Has cached field', (done) => {
-    var seneca = createInstance(done)
-    var payload = {name: 'seneca-entity'}
-
-    seneca.act('role:npm,cmd:get', payload, (err, reply) => {
-      expect(err).to.not.exist()
-
-      expect(reply).to.exist()
-      expect(reply.data).to.exist()
-      expect(reply.err).to.not.exist()
-      expect(reply.ok).to.be.true()
-
-      expect(reply.data.cached).to.exist().and.to.be.a.number()
-      done()
-    })
-  })
-
-  it('Returns cached data', (done) => {
-    var seneca = createInstance(done)
-    var payload = {name: 'seneca-entity'}
-
-    seneca.act('role:npm,cmd:get', payload, (err, reply) => {
-      expect(err).to.not.exist()
-
-      var cachedOne = reply.data.cached
-      expect(cachedOne).to.exist()
-
-      seneca.act('role:npm,cmd:get', payload, (err, reply) => {
-        expect(err).to.not.exist()
-
-        var cachedTwo = reply.data.cached
-        expect(cachedTwo).to.exist()
-
-        expect(cachedOne).to.equal(cachedTwo)
-        done()
-      })
-    })
-  })
-
-  it('Can return non-cached data', (done) => {
-    var seneca = createInstance(done)
-    var payload = {name: 'seneca-entity'}
-
-    seneca.act('role:npm,cmd:get', payload, (err, reply) => {
-      expect(err).to.not.exist()
-
-      expect(reply).to.exist()
-      expect(reply.data).to.exist()
-      expect(reply.err).to.not.exist()
-      expect(reply.ok).to.be.true()
-
-      var cachedOne = reply.data.cached
-      expect(cachedOne).to.exist()
-      payload.update = true
-
-      seneca.act('role:npm,cmd:get', payload, (err, reply) => {
-        expect(err).to.not.exist()
-
-        expect(reply).to.exist()
-        expect(reply.data).to.exist()
-        expect(reply.err).to.not.exist()
-        expect(reply.ok).to.be.true()
-
-        var cachedTwo = reply.data.cached
-        expect(cachedTwo).to.exist()
-
-        expect(cachedOne).to.be.below(cachedTwo)
-        done()
+        test.same(cachedOne, cachedTwo)
       })
     })
   })
 })
 
-describe('An invalid role:npm,cmd:get call', () => {
-  it('Has an error and no data', (done) => {
-    var seneca = createInstance(done)
+Tape('Returns cached data by default', (test) => {
+  test.plan(1)
+
+  var mu = Mu()
+
+  Npm(mu, {}, () => {
+    mu.dispatch({role: 'store', cmd: 'get', type: 'npm', name: 'mu'}, (err, reply) => {
+      var cachedOne = reply.cached
+
+      mu.dispatch({role: 'store', cmd: 'get', type: 'npm', name: 'mu'}, (err, reply) => {
+        var cachedTwo = reply.cached
+
+        test.same(cachedOne, cachedTwo)
+      })
+    })
+  })
+})
+
+Tape.skip('Can return non-cached data', (test) => {
+  var mu = Mu()
+  var payload = {name: 'mu'}
+
+  mu.dispatch('role:npm,cmd:get', payload, (err, reply) => {
+    var cachedOne = reply.data.cached
+    payload.update = true
+
+    mu.dispatch('role:npm,cmd:get', payload, (err, reply) => {
+
+    })
+  })
+})
+
+Tape.skip('An invalid role:npm,cmd:get call', (test) => {
+  Tape('Has an error and no data', (test) => {
+    var mu = Mu()
     var payload = {name: 'randomName0927e3'}
 
-    seneca.act('role:npm,cmd:get', payload, (err, reply) => {
-      expect(err).to.not.exist()
+    mu.dispatch('role:npm,cmd:get', payload, (err, reply) => {
 
-      expect(reply).to.exist()
-      expect(reply.data).to.not.exist()
-      expect(reply.err).to.exist()
-      expect(reply.ok).to.be.false()
-
-      done()
-    })
-  })
-})
-
-describe('A valid role:info,req:part call', () => {
-  it('Has no error and has data', (done) => {
-    var seneca = createInstance(done)
-    var payload = {name: 'seneca-entity'}
-
-    seneca.act('role:info,req:part', payload, (err, reply) => {
-      expect(err).to.not.exist()
-      expect(reply).to.exist()
-      done()
-    })
-  })
-
-  it('Responds via role:info,res:part', (done) => {
-    var seneca = createInstance(done)
-    var payload = {name: 'seneca-entity'}
-
-    seneca.add('role:info,res:part', (msg, cb) => {
-      expect(msg).to.exist()
-      cb()
-      done()
-    })
-
-    seneca.act('role:info,req:part', payload, function (err, reply) {
-      expect(err).to.not.exist()
-      expect(reply).to.exist()
     })
   })
 })
