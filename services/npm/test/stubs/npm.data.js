@@ -1,14 +1,14 @@
 module.exports = {
-  '_id': 'seneca-entity',
+  '_id': 'example',
   '_rev': '3-1a2d436a902cdfaa820f4da8aeeeb4f1',
-  'name': 'seneca-entity',
-  'description': 'Entity plugin for seneca',
+  'name': 'example-plugin',
+  'description': 'Example',
   'dist-tags': {
     'latest': '0.0.1'
   },
   'versions': {
     '0.0.1': {
-      'name': 'mu',
+      'name': 'example-plugin',
       'description': 'Entity plugin for seneca',
       'keywords': [
         'seneca',
@@ -38,7 +38,7 @@ module.exports = {
       ],
       'repository': {
         'type': 'git',
-        'url': 'git+https://github.com/senecajs/seneca-entity.git'
+        'url': 'git+https://github.com/senecajs/example-plugin.git'
       },
       'scripts': {
         'test': 'lab -v -P test -L -t 80',
@@ -54,9 +54,9 @@ module.exports = {
       },
       'gitHead': '61371232af57ee37c573cfc114096088def6f478',
       'bugs': {
-        'url': 'https://github.com/senecajs/seneca-entity/issues'
+        'url': 'https://github.com/senecajs/example-plugin/issues'
       },
-      '_id': 'seneca-entity@0.0.1',
+      '_id': 'example-plugin@0.0.1',
       '_shasum': '184d2251666938639364256836e6d16db2f8f729',
       '_from': '.',
       '_npmVersion': '3.3.12',
@@ -67,7 +67,7 @@ module.exports = {
       },
       'dist': {
         'shasum': '184d2251666938639364256836e6d16db2f8f729',
-        'tarball': 'https://registry.npmjs.org/seneca-entity/-/seneca-entity-0.0.1.tgz'
+        'tarball': 'https://registry.npmjs.org/example-plugin/-/example-plugin-0.0.1.tgz'
       },
       'maintainers': [
         {
@@ -77,12 +77,12 @@ module.exports = {
       ],
       '_npmOperationalInternal': {
         'host': 'packages-5-east.internal.npmjs.com',
-        'tmp': 'tmp/seneca-entity-0.0.1.tgz_1455650942742_0.4798124579247087'
+        'tmp': 'tmp/example-plugin-0.0.1.tgz_1455650942742_0.4798124579247087'
       },
       'directories': {}
     }
   },
-  'readme': '# seneca-entity\nEntity plugin for seneca\n',
+  'readme': '# example-plugin\nEntity plugin for seneca\n',
   'maintainers': [
     {
       'name': 'rjrodger',
@@ -106,14 +106,14 @@ module.exports = {
   ],
   'repository': {
     'type': 'git',
-    'url': 'git+https://github.com/senecajs/seneca-entity.git'
+    'url': 'git+https://github.com/senecajs/example-plugin.git'
   },
   'author': {
     'name': 'Richard Rodger',
     'url': 'http://richardrodger.com/'
   },
   'bugs': {
-    'url': 'https://github.com/senecajs/seneca-entity/issues'
+    'url': 'https://github.com/senecajs/example-plugin/issues'
   },
   'license': 'MIT'
 }

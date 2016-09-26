@@ -27,8 +27,12 @@ function cmdGet (msg, done) {
     return done(null, npm)
   }
 
-  var registry = '' + opts.registry + msg.name
-  Request.get({url: registry, gzip: true}, (err, res, body) => {
+  var searchOpts = {
+    url: opts.registry + msg.name,
+    gzip: true
+  }
+
+  Request.get(searchOpts, (err, res, body) => {
     if (err) {
       return done(err)
     }
