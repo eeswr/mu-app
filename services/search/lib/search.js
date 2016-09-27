@@ -35,11 +35,8 @@ module.exports = function (options) {
     }
   })
 
-  mu.define({role:'store', cmd:'search', type:'search'}, cmdGet)
-  mu.define({role:'store', cmd:'upsert', type:'search'}, cmdGet)
-
-  seneca.add('role:search,cmd:search', search)
-  seneca.add('role:search,cmd:upsert', upsert)
+  mu.define({role:'search', cmd:'search'}, search)
+  mu.define({role:'search', cmd:'upsert'}, upsert)
 
   done()
 }

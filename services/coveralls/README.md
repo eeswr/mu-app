@@ -25,7 +25,7 @@ all available variable names.
 
 #### COVERALLS_PORT
   - The port to listen on.
-  - Defaults to `8054`.
+  - Defaults to `6053`.
 
 #### COVERALLS_REGISTRY
   - Changes the Coveralls URL used to retrieve the module info.
@@ -37,23 +37,13 @@ all available variable names.
 
 ## Messages Handled
 
-### `role:coveralls,cmd:get`
+### `role:coveralls, cmd:get`
 Returns Coveralls specific data for the module name provided.
 
 ```js
-seneca.act(`role:coveralls,cmd:get`, {name:'seneca'}, (err, data) => {})
-```
-
-## Messages Emitted
-
-### `role:info,res:part,part:coveralls`
-
-Called in response to a call to `role:info,req:part`.
-
-```js
 mu.dispatch({role: 'store', cmd: 'get', type:'coveralls', name: payload.name}, (err, reply) => {
-})
 ```
+
 Data Returned
 - name: Name of the module,
 - coverageChange: coverage changed,

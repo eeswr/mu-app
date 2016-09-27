@@ -16,7 +16,7 @@ const opts = {
   },
   network: {
     host: envs.COVERALLS_HOST || 'localhost',
-    port: envs.COVERALLS_PORT || '8054'
+    port: envs.COVERALLS_PORT || '6053'
   }
 }
 
