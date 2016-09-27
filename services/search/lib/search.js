@@ -3,10 +3,6 @@
 var ElasticSearch = require('elasticsearch')
 
 var opts = {
-  elastic: {
-    host: 'localhost',
-    port: 9200
-  },
   mapping: {
     index: 'modules',
     type: 'document',
@@ -24,10 +20,7 @@ var opts = {
 }
 
 module.exports = function (options) {
-  var seneca = this
-  var extend = seneca.util.deepextend
-
-  opts = extend(opts, options)
+  opts = Object.assign({}, opts, options)
   opts.elastic.client = new ElasticSearch.Client({
     host: {
       host: opts.elastic.host,
@@ -42,13 +35,13 @@ module.exports = function (options) {
     }
   })
 
+  mu.define({role:'store', cmd:'search', type:'search'}, cmdGet)
+  mu.define({role:'store', cmd:'upsert', type:'search'}, cmdGet)
+
   seneca.add('role:search,cmd:search', search)
   seneca.add('role:search,cmd:upsert', upsert)
-  seneca.add('role:info,info:updated', aliasUpsert)
 
-  return {
-    name: 'nodezoo-search'
-  }
+  done()
 }
 
 function ensureElasticSearch (done) {
@@ -94,10 +87,7 @@ function search (msg, done) {
       }
     }
 
-    done(null, {
-      ok: true,
-      items: items
-    })
+    done({items: items})
   })
 }
 
@@ -161,15 +151,11 @@ function upsert (msg, done) {
   client.index(payload, (err, reply) => {
     if (err) return done(err)
 
-    done(null, {
+    done({
       ok: true,
       index: reply._index,
       version: reply._version,
       intial: reply.created
     })
   })
-}
-
-function aliasUpsert (msg, done) {
-  this.act('role:search,cmd:upsert', {data: msg.data}, done)
 }

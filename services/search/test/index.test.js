@@ -1,8 +1,8 @@
 'use strict'
 
-var Lab = require('lab')
+const test = require('tape')
 
-var lab = exports.lab = Lab.script()
-var describe = lab.describe
-
-describe('No Tests', () => {})
+test('"role:store, cmd:search, type:search" ', (t) => {
+  t.plan(1)
+  t.ok(true)
+})

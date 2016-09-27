@@ -7,6 +7,7 @@ const Coveralls = require('../lib/coveralls')
 const envs = process.env
 const opts = {
   mu: {
+    tag: envs.COVERALLS_TAG || 'muzoo-coveralls'
   },
   cacheSize: 99999,
   coveralls: {
@@ -22,5 +23,5 @@ const opts = {
 const mu = Mu(opts.mu)
 
 Coveralls(mu, opts.coveralls, () => {
-  mu.inbound({role: 'store', type:'coveralls'}, Tcp.server({host: opts.network.host, port: opts.network.host}))
+  mu.inbound({role: 'store', type:'coveralls'}, Tcp.server({host: opts.network.host, port: opts.network.port}))
 })
