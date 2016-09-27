@@ -1,183 +1,65 @@
 'use strict'
 
-var Code = require('code')
-var Lab = require('lab')
+var Tape = require('tape')
 var Seneca = require('seneca')
 var _ = require('lodash')
+var TravisProxy = require('./stubs/travis.proxy.js')
+var Mu = require('mu')
 
-var lab = exports.lab = Lab.script()
-var describe = lab.describe
-var suite = lab.suite
-var before = lab.before
-var it = lab.it
-var expect = Code.expect
+var Travis = Proxyquire('..', TravisProxy)
 
-function createInstance () {
-  return Seneca({log: 'silent'})
-    .use('entity')
-    .use('../lib/travis')
-}
-process.setMaxListeners(12)
+Tape('A valid role:npm,cmd:get call - Has no error and data', (test) => {
+  test.plan(2)
 
-var si = createInstance()
+  var mu = Mu()
 
-suite('nodezoo-travis suite tests ', function () {
-  before({}, function (done) {
-    si.ready(function (err) {
-      if (err) {
-        return process.exit(!console.error(err))
-      }
-      done()
+  Travis(mu, {}, () => {
+      mu.dispatch({role: 'store', cmd: 'get', type: 'npm', name: 'mu'}, (err, reply) => {
+        test.error(err)
+        test.ok(reply)
+      })
+    })
+  })
+
+Tape('Returns cached data by default', (test) => {
+  test.plan(1)
+
+  var mu = Mu()
+
+  Travis(mu, {}, () => {
+    mu.dispatch({role: 'store', cmd: 'get', type: 'npm', name: 'mu'}, (err, reply) => {
+      var cachedOne = reply.cached
+
+      mu.dispatch({role: 'store', cmd: 'get', type: 'npm', name: 'mu'}, (err, reply) => {
+        var cachedTwo = reply.cached
+
+        test.same(cachedOne, cachedTwo)
+      })
     })
   })
 })
 
-describe('nodezoo-travis tests', () => {
-  it('test Valid Response', function (done) {
-    var si = createInstance()
-    var payload = { 'name': 'seneca' }
-    si.act(_.extend({ role: 'travis', cmd: 'get' }, payload), function (err, reply) {
-      expect(err).to.not.exist()
-      expect(reply).to.not.be.empty()
-      done(err)
+Tape.skip('Can return non-cached data', (test) => {
+  var mu = Mu()
+  var payload = {name: 'mu'}
+
+  mu.dispatch('role:npm,cmd:get', payload, (err, reply) => {
+    var cachedOne = reply.data.cached
+    payload.update = true
+
+    mu.dispatch('role:npm,cmd:get', payload, (err, reply) => {
+
     })
   })
+})
 
-  it('test Everything', function (done) {
-    var si = createInstance()
-    var payload = { 'name': 'seneca', 'user': 'powerbrian', 'repo': 'https://github.com/senecajs/seneca' }
-    si.act(_.extend({ role: 'travis', cmd: 'get' }, payload), function (err, reply) {
-      expect(err).to.not.exist()
-      expect(reply).to.not.be.empty()
-      done(err)
-    })
-  })
+Tape.skip('An invalid role:npm,cmd:get call', (test) => {
+  Tape('Has an error and no data', (test) => {
+    var mu = Mu()
+    var payload = {name: 'randomName0927e3'}
 
-  it('test No Repo', function (done) {
-    var si = createInstance()
-    var payload = { 'name': 'seneca', 'user': 'powerbrian', 'repo': '' }
-    si.act(_.extend({ role: 'travis', cmd: 'get' }, payload), function (err, reply) {
-      expect(err).to.not.exist()
-      expect(reply).to.not.be.empty()
-      done(err)
-    })
-  })
+    mu.dispatch('role:npm,cmd:get', payload, (err, reply) => {
 
-  it('test no User', function (done) {
-    var si = createInstance()
-    var payload = { 'name': 'seneca', 'user': '', 'repo': '' }
-    si.act(_.extend({ role: 'travis', cmd: 'get' }, payload), function (err, reply) {
-      expect(err).to.not.exist()
-      expect(reply).to.not.be.empty()
-      done(err)
-    })
-  })
-
-  it('test Invalid Response', function (done) {
-    var si = createInstance()
-    var payload = { 'name': 'shoobydoobydoobop' }
-    si.act(_.extend({ role: 'travis', cmd: 'get' }, payload), function (err, reply) {
-      expect(err).to.not.exist()
-      expect(reply).to.exist()
-      expect(reply.err).to.exist()
-      expect(reply.ok).to.be.false()
-      done()
-    })
-  })
-
-  it('test ID exists', function (done) {
-    var si = createInstance()
-    var payload = { 'name': 'seneca', 'user': 'powerbrian', 'repo': 'https://github.com/senecajs/seneca' }
-    si.act(_.extend({ role: 'travis', cmd: 'get' }, payload), function (err, reply) {
-      expect(err).to.not.exist()
-
-      expect(reply).to.exist()
-      expect(reply.data).to.exist()
-      expect(reply.err).to.not.exist()
-      expect(reply.ok).to.be.true()
-
-      expect(reply.data.id).to.be.a.string()
-      done(err)
-    })
-  })
-
-  it('test URL exists', function (done) {
-    var si = createInstance()
-    var payload = { 'name': 'seneca', 'user': 'powerbrian', 'repo': 'https://github.com/senecajs/seneca' }
-    si.act(_.extend({ role: 'travis', cmd: 'get' }, payload), function (err, reply) {
-      expect(err).to.not.exist()
-
-      expect(reply).to.exist()
-      expect(reply.data).to.exist()
-      expect(reply.err).to.not.exist()
-      expect(reply.ok).to.be.true()
-
-      expect(reply.data.url).to.be.a.string()
-      done(err)
-    })
-  })
-
-  it('test BuildID exists', function (done) {
-    var si = createInstance()
-    var payload = { 'name': 'seneca', 'user': 'powerbrian', 'repo': 'https://github.com/senecajs/seneca' }
-    si.act(_.extend({ role: 'travis', cmd: 'get' }, payload), function (err, reply) {
-      expect(err).to.not.exist()
-
-      expect(reply).to.exist()
-      expect(reply.data).to.exist()
-      expect(reply.err).to.not.exist()
-      expect(reply.ok).to.be.true()
-
-      expect(reply.data.buildId).to.be.a.number()
-      done(err)
-    })
-  })
-
-  it('test Active exists', function (done) {
-    var si = createInstance()
-    var payload = { 'name': 'seneca', 'user': 'powerbrian', 'repo': 'https://github.com/senecajs/seneca' }
-    si.act(_.extend({ role: 'travis', cmd: 'get' }, payload), function (err, reply) {
-      expect(err).to.not.exist()
-
-      expect(reply).to.exist()
-      expect(reply.data).to.exist()
-      expect(reply.err).to.not.exist()
-      expect(reply.ok).to.be.true()
-
-      expect(reply.data.active).to.be.a.boolean()
-      done(err)
-    })
-  })
-
-  it('test buildState exists', function (done) {
-    var si = createInstance()
-    var payload = { 'name': 'seneca', 'user': 'powerbrian', 'repo': 'https://github.com/senecajs/seneca' }
-    si.act(_.extend({ role: 'travis', cmd: 'get' }, payload), function (err, reply) {
-      expect(err).to.not.exist()
-
-      expect(reply).to.exist()
-      expect(reply.data).to.exist()
-      expect(reply.err).to.not.exist()
-      expect(reply.ok).to.be.true()
-
-      expect(reply.data.buildState).to.be.a.string()
-      done(err)
-    })
-  })
-
-  it('test lastBuilt exists', function (done) {
-    var si = createInstance()
-    var payload = { 'name': 'seneca', 'user': 'powerbrian', 'repo': 'https://github.com/senecajs/seneca' }
-    si.act(_.extend({ role: 'travis', cmd: 'get' }, payload), function (err, reply) {
-      expect(err).to.not.exist()
-
-      expect(reply).to.exist()
-      expect(reply.data).to.exist()
-      expect(reply.err).to.not.exist()
-      expect(reply.ok).to.be.true()
-
-      expect(reply.data.lastBuilt).to.be.a.string()
-      done(err)
     })
   })
 })
