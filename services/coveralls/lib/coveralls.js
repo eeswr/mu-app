@@ -37,7 +37,7 @@ function cmdGet (msg, done) {
       data = JSON.parse(body)
     }
     catch (e) {
-      return done(err)
+      return done(e)
     }
 
     const distTags = data['dist-tags'] || {}
@@ -64,7 +64,7 @@ function queryCoveralls (gitInfo, msg, done) {
       return done(err)
     }
     if (res && res.statusCode && res.statusCode !== 200) {
-      return done(err)
+      return done({err: new Error('Coveralls request not sucessfull')})
     }
 
     let coverallsData = null
@@ -73,7 +73,7 @@ function queryCoveralls (gitInfo, msg, done) {
       coverallsData = JSON.parse(body)
     }
     catch (e) {
-      return done(err)
+      return done(e)
     }
     const data = {
       name: gitInfo.name,

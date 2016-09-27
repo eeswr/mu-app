@@ -154,7 +154,7 @@ test('invalid "role:store, cmd:get, type:coveralls" no error and no data', (t) =
 
 
 test('invalid "role:store, cmd:get, type:coveralls" npm request returns error', (t) => {
-  t.plan(2)
+  t.plan(1)
 
   const mu = Mu()
 
@@ -171,104 +171,98 @@ test('invalid "role:store, cmd:get, type:coveralls" npm request returns error', 
 
   Coveralls(mu, {registry: NpmRegistry, url: CoverallsUrl}, () => {
     mu.dispatch({role: 'store', cmd: 'get', type:'coveralls', name: payload.name}, (err, reply) => {
-      console.log(err, reply)
       t.equal(err, errMsg)
-      t.notOk(reply)
     })
   })
 })
 
-  // describe('Invalid "role:coveralls,cmd:get" calls', () => {
-  //   it('npm request invalid body', (done) => {
-  //     const seneca = createInstance()
-  //     const payload = {name: 'seneca'}
-  //     const failedRequestMap = {
-  //       urlMatch: 'npm',
-  //       err: null,
-  //       response: null,
-  //       body: {}
-  //     }
+test('invalid "role:store, cmd:get, type:coveralls" invalid body', (t) => {
+  t.plan(1)
 
-  //     seneca.ready(function () {
-  //       RequestMap = _.concat([], failedRequestMap)
+  const mu = Mu()
 
-  //       seneca.act('role:coveralls,cmd:get', payload, (err, reply) => {
-  //         expect(err).to.not.exist()
-  //         expect(reply.ok).to.be.false()
-  //         expect(reply.err).to.exist()
+  const payload = {name: 'seneca'}
+  const errMsg = 'Request failed'
+  const failedRequestMap = {
+    urlMatch: 'npm',
+    err: null,
+    response: null,
+    body: {}
+  }
 
-  //         done()
-  //       })
-  //     })
-  //   })
+  RequestMap = _.concat([], failedRequestMap)
 
-  //   it('coveralls request returns error', (done) => {
-  //     const seneca = createInstance()
-  //     const payload = {name: 'seneca'}
-  //     const errMsg = 'Request failed'
-  //     const failedRequestMap = {
-  //       urlMatch: 'coveralls',
-  //       err: errMsg,
-  //       response: null,
-  //       body: null
-  //     }
+  Coveralls(mu, {registry: NpmRegistry, url: CoverallsUrl}, () => {
+    mu.dispatch({role: 'store', cmd: 'get', type:'coveralls', name: payload.name}, (err, reply) => {
+      t.ok(err)
+    })
+  })
+})
 
-  //     seneca.ready(function () {
-  //       RequestMap = _.concat([], failedRequestMap, DefaultRequestMap[0])
+test('invalid "role:store, cmd:get, type:coveralls" coveralls request return error', (t) => {
+  t.plan(1)
 
-  //       seneca.act('role:coveralls,cmd:get', payload, (err, reply) => {
-  //         expect(err).to.not.exist()
-  //         expect(reply.ok).to.be.false()
-  //         expect(reply.err).to.equal(errMsg)
+  const mu = Mu()
 
-  //         done()
-  //       })
-  //     })
-  //   })
+  const payload = {name: 'seneca'}
+  const errMsg = 'Request failed'
+  const failedRequestMap = {
+    urlMatch: 'coveralls',
+    err: errMsg,
+    response: null,
+    body: null
+  }
 
-  //   it('coveralls request invalid body', (done) => {
-  //     const seneca = createInstance()
-  //     const payload = {name: 'seneca'}
-  //     const failedRequestMap = {
-  //       urlMatch: 'coveralls',
-  //       err: null,
-  //       response: null,
-  //       body: {}
-  //     }
+  RequestMap = _.concat([], failedRequestMap, DefaultRequestMap[0])
 
-  //     seneca.ready(function () {
-  //       RequestMap = _.concat([], failedRequestMap, DefaultRequestMap[0])
+  Coveralls(mu, {registry: NpmRegistry, url: CoverallsUrl}, () => {
+    mu.dispatch({role: 'store', cmd: 'get', type:'coveralls', name: payload.name}, (err, reply) => {
+      t.equal(err, errMsg)
+    })
+  })
+})
 
-  //       seneca.act('role:coveralls,cmd:get', payload, (err, reply) => {
-  //         expect(err).to.not.exist()
-  //         expect(reply.ok).to.be.false()
-  //         expect(reply.err).to.exist()
+test('invalid "role:store, cmd:get, type:coveralls" coveralls request invalid body', (t) => {
+  t.plan(1)
 
-  //         done()
-  //       })
-  //     })
-  //   })
+  const mu = Mu()
 
-  //   it('coveralls request invalid body', (done) => {
-  //     const seneca = createInstance()
-  //     const payload = {name: 'seneca'}
-  //     const failedRequestMap = {
-  //       urlMatch: 'coveralls',
-  //       err: null,
-  //       response: { statusCode: 404 },
-  //       body: '<html lang=\'en\'></html>'
-  //     }
+  const payload = {name: 'seneca'}
+  const failedRequestMap = {
+    urlMatch: 'coveralls',
+    err: null,
+    response: null,
+    body: {}
+  }
 
-  //     seneca.ready(function () {
-  //       RequestMap = _.concat([], failedRequestMap, DefaultRequestMap[0])
 
-  //       seneca.act('role:coveralls,cmd:get', payload, (err, reply) => {
-  //         expect(err).to.not.exist()
-  //         expect(reply.ok).to.be.false()
-  //         expect(reply.err).to.exist()
+  RequestMap = _.concat([], failedRequestMap, DefaultRequestMap[0])
 
-  //         done()
-  //       })
-  //     })
-  //   })
-  // })
+  Coveralls(mu, {registry: NpmRegistry, url: CoverallsUrl}, () => {
+    mu.dispatch({role: 'store', cmd: 'get', type:'coveralls', name: payload.name}, (err, reply) => {
+      t.ok(err)
+    })
+  })
+})
+
+test('invalid "role:store, cmd:get, type:coveralls" coveralls request invalid body', (t) => {
+  t.plan(1)
+
+  const mu = Mu()
+
+  const payload = {name: 'seneca'}
+  const failedRequestMap = {
+    urlMatch: 'coveralls',
+    err: null,
+    response: { statusCode: 404 },
+    body: '<html lang=\'en\'></html>'
+  }
+
+  RequestMap = _.concat([], failedRequestMap, DefaultRequestMap[0])
+
+  Coveralls(mu, {registry: NpmRegistry, url: CoverallsUrl}, () => {
+    mu.dispatch({role: 'store', cmd: 'get', type:'coveralls', name: payload.name}, (err, reply) => {
+      t.ok(err)
+    })
+  })
+})
