@@ -1,7 +1,7 @@
 {
   "name": "muzoo-coveralls",
   "version": "0.0.1",
-  "description": "A coveralls store for mu",
+  "description": "A coveralls store for MuZoo",
   "main": "./lib/coveralls.js",
   "scripts": {
     "start": "node srv/start.js",

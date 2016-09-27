@@ -1,40 +1,26 @@
 'use strict'
 
-var Seneca = require('seneca')
-var Mesh = require('seneca-mesh')
+const Mu = require('mu')
+const Tcp = require('mu/drivers/tcp')
 var Search = require('../lib/search')
 
 var envs = process.env
 var opts = {
-  seneca: {
-    tag: envs.SEARCH_TAG || 'nodezoo-search'
+  mu: {
+    tag: envs.SEARCH_TAG || 'muzoo-search'
   },
   search: {
+    host: envs.SEARCH_HOST || 'localhost',
+    port: envs.SEARCH_PORT || '8060',
     elastic: {
       host: envs.SEARCH_ELASTIC_HOST || 'localhost',
       port: envs.SEARCH_ELASTIC_PORT || '9200'
-    }
-  },
-  mesh: {
-    auto: true,
-    host: envs.SEARCH_HOST || '127.0.0.1',
-    bases: [envs.BASE_HOST || '127.0.0.1:39999'],
-    listen: [
-      {pin: 'role:search,cmd:upsert', model: 'consume', host: envs.SEARCH_HOST || '127.0.0.1'},
-      {pin: 'role:search,cmd:search', model: 'consume', host: envs.SEARCH_HOST || '127.0.0.1'},
-      {pin: 'role:info,info:updated', model: 'observe', host: envs.SEARCH_HOST || '127.0.0.1'}
-    ]
-  },
-  isolated: {
-    host: envs.SEARCH_HOST || 'localhost',
-    port: envs.SEARCH_PORT || '8060'
+    },
   }
 }
 
-var Service =
-Seneca(opts.seneca)
-  .use(Search, opts.search)
+const mu = Mu(opts.mu)
 
-envs.SEARCH_ISOLATED
-  ? Service.listen(opts.isolated)
-  : Service.use(Mesh, opts.mesh)
+Search(mu, opts.search, () => {
+  mu.inbound({role: 'store', type:'search'}, Tcp.server({host: opts.network.host, port: opts.network.port}))
+})
