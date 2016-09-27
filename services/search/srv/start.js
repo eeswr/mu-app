@@ -11,7 +11,7 @@ var opts = {
   },
   search: {
     host: envs.SEARCH_HOST || 'localhost',
-    port: envs.SEARCH_PORT || '8060',
+    port: envs.SEARCH_PORT || '6040',
     elastic: {
       host: envs.SEARCH_ELASTIC_HOST || 'localhost',
       port: envs.SEARCH_ELASTIC_PORT || '9200'
