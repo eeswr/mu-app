@@ -2,68 +2,72 @@
 
 var Travis = require('travis-ci')
 var Request = require('request')
+var Cache = require('lru-cache')
 
 var opts = {
+  cacheSize: 99999,
   registry: 'http://registry.npmjs.org/'
 }
 
-module.exports = function () {
-  var seneca = this
+module.exports = function (mu, options, done) {
+    opts = Object.assign({}, opts, options)
+    opts.mu = mu
+    opts.cache = Cache(opts.cacheSize)
 
-  opts = seneca.util.deepextend(opts)
-  opts.client = new Travis({version: '2.0.0'})
-  opts.cache = seneca.make$('travis_cache')
-  opts.cache.load$()
+    mu.define({role: 'store', cmd: 'get', type: 'npm'}, cmdGet)
 
-  seneca.add('role:travis,cmd:get', cmdGet)
-  seneca.add('role:info,req:part', aliasGet)
-
-  return {
-    name: 'nodezoo-travis'
-  }
+   done()
 }
 
 function cmdGet (msg, done) {
-  let cache = opts.cache
-  let registry = opts.registry + msg.name
-  let context = this
+  msg = msg.pattern
 
-  cache.load$(msg.name, (err, cached) => {
+  var npm = opts.cache.get(msg.name) || null
+  if (npm && !msg.update) {
+     return done(null, npm)
+  }
+
+
+  var registry = '' + opts.registry + msg.name
+  Request.get({url: registry, gzip: true}, (err, res, body) => {
     if (err) {
-      context.log.debug(`Cannot load from cache module ${msg.name}, try now to get it remotely`)
+      return done(err)
     }
 
-    if (cached && !msg.update) {
-      return done(null, {ok: true, data: cached.data$(cached)})
+    var data = null
+    try {
+       data = JSON.parse(body)
     }
 
-    Request.get({url: registry, gzip: true}, (err, res, body) => {
-      if (err) {
-        return done(null, {ok: false, err: err})
-      }
-
-      var data = null
-
-      try {
-        data = JSON.parse(body)
-      }
-      catch (e) {
-        return done(null, {ok: false, err: e})
-      }
+    catch (e) {
+      return done(err)
+    }
 
       var distTags = data['dist-tags'] || {}
       var latest = ((data.versions || {})[distTags.latest]) || {}
       var repository = latest.repository || {}
-      var url = repository.url || ''
+      var urlRepo = repository.url || ''
+      var author = latest.author || {}
+      var maintainers = data.maintainers || []
 
       var matches = /[\/:]([^\/:]+?)[\/:]([^\/]+?)(\.git)*$/.exec(url) || []
-      if (matches && matches.length >= 2) {
-        var params = {
-          name: msg.name,
-          user: matches[1] || '',
-          repo: matches[2] || '',
-          cached: cached
-        }
+      if (Object.keys(data).length > 0) {
+       var out = {
+         id: data.name || '',
+         name: data.name || '',
+         urlRepo: urlRepo || '',
+         urlPkg: 'https://www.npmjs.com/package/' + data.name || '',
+         description: data.description || '',
+         latestVersion: distTags.latest || '',
+         releaseCount: Object.keys(data.versions || {}).length || 0,
+         dependencies: latest.dependencies || {},
+         author: {name: author.name || '', email: author.email || ''},
+         licence: latest.license || '',
+         maintainers: maintainers || [],
+         readme: data.readme || '',
+         homepage: data.homepage || '',
+         cached: Date.now()
+      }
 
         queryTravis(params, done)
       }
@@ -72,7 +76,6 @@ function cmdGet (msg, done) {
       }
     })
   })
-}
 
 function queryTravis (msg, done) {
   var cache = opts.cache
@@ -116,19 +119,9 @@ function queryTravis (msg, done) {
   })
 }
 
-function aliasGet (msg, done) {
-  var seneca = this
-  var payload = {name: msg.name}
-
-  seneca.act(`role:travis, cmd:get, update: ${msg.update || false}`, payload, (err, res) => {
-    if (err) {
-      return done(null, {ok: false, err: err})
+    opts.cache.set(msg.name, out)
+        return done(null, out)
     }
-
-    if (res && res.ok) {
-      payload.data = res.data
-      seneca.act('role:info,res:part,part:travis', payload)
-    }
-    done(null, {ok: true})
+    return done({err: new Error('not found on npm')})
   })
 }
