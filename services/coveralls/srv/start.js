@@ -1,50 +1,26 @@
 'use strict'
 
-const Seneca = require('seneca')
-const Entities = require('seneca-entity')
-const Mesh = require('seneca-mesh')
+const Mu = require('mu')
+const Tcp = require('mu/drivers/tcp')
 const Coveralls = require('../lib/coveralls')
-const RedisStore = require('seneca-redis-store')
 
 const envs = process.env
 const opts = {
-  seneca: {
-    tag: envs.COVERALLS_TAG || 'nodezoo-coveralls',
-    log: 'none'
+  mu: {
   },
+  cacheSize: 99999,
   coveralls: {
     registry: envs.NPM_REGISTRY || 'http://registry.npmjs.org/',
-    url: envs.COVERALLS_REGISTRY || 'https://coveralls.io/'
+    url: envs.COVERALLS_REGISTRY || 'https://coveralls.io/',
   },
-  mesh: {
-    auto: true,
-    host: envs.COVERALLS_HOST || '127.0.0.1',
-    bases: [envs.BASE_HOST || '127.0.0.1:39999'],
-    listen: [
-      {pin: 'role:coveralls,cmd:get', model: 'consume', host: envs.COVERALLS_HOST || '127.0.0.1'},
-      {pin: 'role:info,req:part', model: 'observe', host: envs.COVERALLS_HOST || '127.0.0.1'}
-    ]
-  },
-  isolated: {
+  network: {
     host: envs.COVERALLS_HOST || 'localhost',
     port: envs.COVERALLS_PORT || '8054'
-  },
-  redis: {
-    host: envs.COVERALLS_REDIS_HOST || 'localhost',
-    port: envs.COVERALLS_REDIS_PORT || '6379'
   }
 }
 
-const Service = Seneca(opts.seneca)
+const mu = Mu(opts.mu)
 
-Service.use(Entities)
-
-if (envs.COVERALLS_ISOLATED) {
-  Service.listen(opts.isolated)
-}
-else {
-  Service.use(Mesh, opts.mesh)
-  Service.use(RedisStore, opts.redis)
-}
-
-Service.use(Coveralls, opts.coveralls)
+Coveralls(mu, opts.coveralls, () => {
+  mu.inbound({role: 'store', type:'coveralls'}, Tcp.server({host: opts.network.host, port: opts.network.host}))
+})
