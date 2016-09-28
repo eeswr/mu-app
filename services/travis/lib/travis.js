@@ -14,7 +14,7 @@ module.exports = function (mu, options, done) {
     opts.mu = mu
     opts.cache = Cache(opts.cacheSize)
 
-    mu.define({role: 'store', cmd: 'get', type: 'npm'}, cmdGet)
+    mu.define({role: 'store', cmd: 'get', type: 'travis'}, cmdGet)
 
    done()
 }

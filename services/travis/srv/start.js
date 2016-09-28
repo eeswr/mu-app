@@ -16,5 +16,5 @@ var opts = {
 
 var mu = Mu(opts.mu)
 Travis(mu, opts.npm, () => {
-  mu.inbound({role: 'store', type: 'travis'}, Tcp.server({port: '6050'}))
+  mu.inbound({role: 'store', type: 'travis'}, Tcp.server({port: '6052'}))
 })
