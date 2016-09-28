@@ -1,35 +1,48 @@
 'use strict'
 
-var envs = process.env
 
+var Mu = require('mu')
+var Tcp = require('mu/drivers/tcp')
+var Info = require('../lib/info')
+
+var envs = process.env
 var opts = {
-  metrics: {
-    emitter: {
-      enabled: false
-    }
+  mu: {
+    tag: envs.NPM_TAG || 'muzoo-info'
   },
-  seneca_metrics: {
-    group: 'nodezoo',
-    tag: 'info',
-    pins: [
-      'role:info,req:part',
-      'role:info,res:part'
-    ]
+  info: {
+    port: envs.INFO_PORT || '6000'
+    host: envs.NPM_HOST || 'localhost'
   },
-  mesh: {
-    auto: true,
-    host: envs.INFO_HOST || '127.0.0.1',
-    bases: [envs.BASE_HOST || '127.0.0.1:39999'],
-    listen: [
-      {pin: 'role:info,cmd:get', model: 'consume', host: envs.INFO_HOST || '127.0.0.1'},
-      {pin: 'role:info,res:part', model: 'observe', host: envs.INFO_HOST || '127.0.0.1'}
-    ]
+  search: {
+    port: envs.SEARCH_PORT || '6040'
+  },
+  npm: {
+    port: envs.NPM_PORT || '6050',
+    host: envs.NPM_HOST || 'localhost'
+  },
+  github: {
+    port: envs.GITHUB_PORT || '6051',
+    host: envs.NPM_HOST || 'localhost'
+  },
+  travis: {
+    port: envs.TRAVIS_PORT || '6052',
+    host: envs.NPM_HOST || 'localhost'
+  },
+  coveralls: {
+    port: envs.COVERALLS_PORT || '6053',
+    host: envs.NPM_HOST || 'localhost'
   }
 }
 
-require('seneca')()
-  .use('entity')
-  .use('../info.js')
-  .use('vidi-metrics', opts.metrics)
-  .use('vidi-seneca-metrics', opts.seneca_metrics)
-  .use('mesh', opts.mesh)
+var mu = Mu(opts.mu)
+Info(mu, opts.info, () => {
+  mu.inbound({role: 'info', type: 'get'}, Tcp.server(opts.info))
+
+  mu.outbound({role: 'store', type: 'npm'}, Tcp.server(opts.npm))
+  mu.outbound({role: 'store', type: 'github'}, Tcp.server(opts.github))
+  mu.outbound({role: 'store', type: 'travis'}, Tcp.server(opts.travis.port))
+  mu.outbound({role: 'store', type: 'coveralls'}, Tcp.server(opts.coveralls))
+
+  mu.outbound({role: 'search', cmd: 'upsert'}, Tcp.server(opts.search))
+})

@@ -1,52 +1,51 @@
 'use strict'
 
-var Cache = require('lru-cache')
+var Parallel = require('fastparallel')()
 
 var opts = {
-  plugin: 'nodezoo-info',
-  role: 'info',
-  size: 99999,
-  wait: 222
+  storeTypes: [
+   'npm',
+   'github',
+   'travis',
+   'coveralls'
+ ]
 }
 
-module.exports = function (options) {
-  var seneca = this
-  var extend = seneca.util.deepextend
+module.exports = function (mu, options, done) {
+  opts = Object.assign({}, opts, options)
 
-  opts = extend(opts, options)
-  opts.cache = Cache(options.size)
+  opts.mu = mu
+  opts.mu.define({role: 'info', cmd: 'get'}, getInfo)
 
-  seneca.add({role: opts.role, cmd: 'get'}, get)
-  seneca.add({role: opts.role, res: 'part'}, update)
+  return done()
+}
 
-  return {
-    name: opts.plugin
+function getInfo (msg, done) {
+  var result = {}
+
+  function next (type, done) {
+    var cmd = {
+      role: 'store',
+      cmd: 'get',
+      type: type,
+      name: msg.name,
+      update: msg.update
+    }
+
+    this.dispatch(cmd, (err, reply) => {
+      if (err) console.log(err)
+
+      result[type] = reply || {}
+      done()
+    })
   }
-}
 
-function get (msg, done) {
-  var seneca = this
-  var name = msg.name
+  function complete (err) {
+    if (err) console.log(err)
 
-  seneca.act({role: opts.role, req: 'part', name: name, update: msg.update})
-
-  function respond () {
-    done(null, (opts.cache.get(name) || {}))
+    this.dispatch({role:'search', cmd: 'upsert', module: result})
+    done(null, result)
   }
 
-  setTimeout(respond, opts.wait)
-}
-
-function update (msg, done) {
-  done()
-
-  var name = msg.name
-  var data = opts.cache.get(name) || {}
-
-
-  data[msg.part] = msg.data
-  data.name = name
-
-  opts.cache.set(name, data)
-  this.act('role:info,info:updated', {data: data})
+  Parallel(opts.mu, next, opts.storeTypes, complete)
 }
