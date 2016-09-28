@@ -10,13 +10,14 @@ var opts = {
 }
 
 module.exports = function (mu, options, done) {
-    opts = Object.assign({}, opts, options)
-    opts.mu = mu
-    opts.cache = Cache(opts.cacheSize)
+  opts = Object.assign({}, opts, options)
+  opts.client = new Travis({version: '2.0.0'})
+  opts.mu = mu
+  opts.cache = Cache(opts.cacheSize)
 
-    mu.define({role: 'store', cmd: 'get', type: 'travis'}, cmdGet)
+  mu.define({role: 'store', cmd: 'get', type: 'travis'}, cmdGet)
 
-   done()
+  done()
 }
 
 function cmdGet (msg, done) {
@@ -24,9 +25,8 @@ function cmdGet (msg, done) {
 
   var npm = opts.cache.get(msg.name) || null
   if (npm && !msg.update) {
-     return done(null, npm)
+    return done(null, npm)
   }
-
 
   var registry = '' + opts.registry + msg.name
   Request.get({url: registry, gzip: true}, (err, res, body) => {
@@ -36,46 +36,34 @@ function cmdGet (msg, done) {
 
     var data = null
     try {
-       data = JSON.parse(body)
+      data = JSON.parse(body)
     }
-
     catch (e) {
       return done(e)
     }
 
-      var distTags = data['dist-tags'] || {}
-      var latest = ((data.versions || {})[distTags.latest]) || {}
-      var repository = latest.repository || {}
-      var urlRepo = repository.url || ''
-      var author = latest.author || {}
-      var maintainers = data.maintainers || []
+    var distTags = data['dist-tags'] || {}
+    var latest = ((data.versions || {})[distTags.latest]) || {}
+    var repository = latest.repository || {}
+    var url = repository.url || ''
 
-      var matches = /[\/:]([^\/:]+?)[\/:]([^\/]+?)(\.git)*$/.exec(url) || []
-      if (Object.keys(data).length > 0) {
-       var out = {
-         id: data.name || '',
-         name: data.name || '',
-         urlRepo: urlRepo || '',
-         urlPkg: 'https://www.npmjs.com/package/' + data.name || '',
-         description: data.description || '',
-         latestVersion: distTags.latest || '',
-         releaseCount: Object.keys(data.versions || {}).length || 0,
-         dependencies: latest.dependencies || {},
-         author: {name: author.name || '', email: author.email || ''},
-         licence: latest.license || '',
-         maintainers: maintainers || [],
-         readme: data.readme || '',
-         homepage: data.homepage || '',
-         cached: Date.now()
+    var matches = /[\/:]([^\/:]+?)[\/:]([^\/]+?)(\.git)*$/.exec(url) || []
+    if (matches && matches.length >= 2) {
+      var params = {
+        name: msg.name,
+        user: matches[1] || '',
+        repo: matches[2] || '',
+        cached: npm
       }
 
-        queryTravis(params, done)
-      }
-      else {
-        return done(null, {ok: false, err: 'Cannot parse url'})
-      }
-    })
+      queryTravis(params, done)
+    }
+    else {
+      return done(null, {ok: false, err: 'Cannot parse url'})
+    }
+
   })
+}
 
 function queryTravis (msg, done) {
   var cache = opts.cache
@@ -116,12 +104,5 @@ function queryTravis (msg, done) {
       data.id$ = msg.name
       cache.make$(data).save$(complete)
     }
-  })
-}
-
-    opts.cache.set(msg.name, out)
-        return done(null, out)
-    }
-    return done({err: new Error('not found on npm')})
   })
 }
