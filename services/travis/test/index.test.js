@@ -1,8 +1,6 @@
 'use strict'
 
 var Tape = require('tape')
-var Seneca = require('seneca')
-var _ = require('lodash')
 var TravisProxy = require('./stubs/travis.proxy.js')
 var Mu = require('mu')
 
