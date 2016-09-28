@@ -15,9 +15,7 @@
     "request": "^2.75.0"
   },
   "devDependencies": {
-    "code": "^4.0.0",
     "coveralls": "^2.11.14",
-    "lab": "^11.0.1",
     "proxyquire": "^1.7.10",
     "tap-spec": "^4.1.1",
     "tape": "^4.6.0",
