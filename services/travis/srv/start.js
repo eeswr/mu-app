@@ -3,7 +3,6 @@
 var Mu = require('mu')
 var Tcp = require('mu/drivers/tcp')
 var Travis = require('../lib/travis')
-var Boot = require('boot-in-the-arse')
 
 var envs = process.env
 var opts = {
@@ -15,12 +14,7 @@ var opts = {
   }
 }
 
-var service = Mu(opts.mu)
-Boot(service)
-
-service
-  .use(Npm, opts.npm)
-  .after((done) => {
-     service.inbound({role: 'store', cmd: 'get', type: 'npm'}, Tcp.server({port: '6050'}))
-     service.inbound({role: 'store', cmd: 'validate'}, Tcp.server({port: '6050'}))
-   })
+var mu = Mu(opts.mu)
+Travis(mu, opts.npm, () => {
+  mu.inbound({role: 'store', type: 'travis'}, Tcp.server({port: '6050'}))
+})

@@ -40,7 +40,7 @@ function cmdGet (msg, done) {
     }
 
     catch (e) {
-      return done(err)
+      return done(e)
     }
 
       var distTags = data['dist-tags'] || {}

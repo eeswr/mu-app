@@ -14,7 +14,7 @@ Tape('A valid role:npm,cmd:get call - Has no error and data', (test) => {
   var mu = Mu()
 
   Travis(mu, {}, () => {
-      mu.dispatch({role: 'store', cmd: 'get', type: 'npm', name: 'mu'}, (err, reply) => {
+      mu.dispatch({role: 'store', cmd: 'get', type: 'travis', name: 'mu'}, (err, reply) => {
         test.error(err)
         test.ok(reply)
       })
@@ -27,13 +27,15 @@ Tape('Returns cached data by default', (test) => {
   var mu = Mu()
 
   Travis(mu, {}, () => {
-    mu.dispatch({role: 'store', cmd: 'get', type: 'npm', name: 'mu'}, (err, reply) => {
+    mu.dispatch({role: 'store', cmd: 'get', type: 'travis', name: 'mu'}, (err, reply) => {
       var cachedOne = reply.cached
 
-      mu.dispatch({role: 'store', cmd: 'get', type: 'npm', name: 'mu'}, (err, reply) => {
+      mu.dispatch({role: 'store', cmd: 'get', type: 'travis', name: 'mu', update: true}, (err, reply) => {
         var cachedTwo = reply.cached
 
-        test.same(cachedOne, cachedTwo)
+        console.log(cachedOne, cachedTwo)
+
+        test.ok((cachedOne < cachedTwo))
       })
     })
   })
